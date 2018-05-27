@@ -117,12 +117,11 @@ public abstract class DAOAbstractDatabase<T extends BasicEntity> implements IDAO
             statement.execute();
             return true;
         } catch (SQLException e) {
-            e.printStackTrace();
+            return false;
         } finally {
 
             closeConnection();
         }
-        return false;
     }
 
     /**

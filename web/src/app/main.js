@@ -1,4 +1,4 @@
-var app = angular.module("tweets", ["ngRoute"]);
+let app = angular.module("tweets", ["ngRoute"]);
 const get_tweets_url = "http://localhost:8080/Web_Domaci7_war_exploded/api/tweets";
 const register_url = "http://localhost:8080/Web_Domaci7_war_exploded/api/users";
 const login_url = "http://localhost:8080/Web_Domaci7_war_exploded/api/users/login";
@@ -6,7 +6,14 @@ const add_tweet_url = "http://localhost:8080/Web_Domaci7_war_exploded/api/tweets
 const search_tweet_url = "http://localhost:8080/Web_Domaci7_war_exploded/api/tweets/search";
 const page_tweets_url = "http://localhost:8080/Web_Domaci7_war_exploded/api/tweets/page/";
 
-var ListController = function($scope, TweetService) {
+const ROOT_HREF = "/Web_Domaci7_war_exploded/#/";
+
+let ListController = function(AuthService, $scope, TweetService) {
+
+	if (!AuthService.isAuthorized()) {
+		AuthService.redirectToLogin();
+	}
+
 	$scope.tweets = [];
 	TweetService.getTweets().then(function(response) {
 		console.log(response.data);
@@ -14,7 +21,17 @@ var ListController = function($scope, TweetService) {
 	});
 };
 
-var RegisterController = function($scope, AccountService) {
+app.run(function ($rootScope, $window) {
+	$rootScope.user = null;
+});
+
+let MainController = function (AuthService, $scope) {
+	$scope.loggedIn = false;
+	$scope.loggedIn = AuthService.isAuthorized();
+	$scope.username = AuthService.getUsername();
+};
+
+let RegisterController = function($window, $rootScope, $scope, AccountService) {
 	$scope.user = {
 		username: '',
 		password: ''
@@ -22,19 +39,25 @@ var RegisterController = function($scope, AccountService) {
 
 	$scope.successText = "";
 
-	$scope.register = AccountService.register($scope.user).then((response) => {
-			console.log('Response: ' + response.data);
-			if (response.data == false) {
-				$scope.successText = "Successfully Registred!";
-				return;
-			} else {
-				$scope.successText = "User already exists!";
-				return;
-			}
-	});
+	$scope.register = function() {
+        AccountService.register($scope.user).then((response) => {
+            console.log('Response: ' + response.data);
+            if (response.data == true) {
+                $scope.successText = "Successfully Registred!";
+                $rootScope.user = angular.copy($scope.user);
+                $window.location.href = ROOT_HREF + 'list';
+                return;
+            } else {
+                $scope.successText = "User already exists!";
+                $scope.user.username = "";
+                $scope.user.password = "";
+                return;
+            }
+        });
+    };
 };
 
-var LoginController = function($scope, AccountService) {
+let LoginController = function($window, $rootScope, $scope, AccountService) {
 	$scope.user = {
 		username: '',
 		password: ''
@@ -42,19 +65,30 @@ var LoginController = function($scope, AccountService) {
 
 	$scope.successText = '';
 
-	$scope.login = AccountService.login($scope.user).then((response) => {
-		console.log('Response: ' + response.data);
-		if (response.data == false) {
-			$scope.successText = "Successfully logged in!";
-			return;
-		} else {
-			$scope.successText = "User already exists!";
-			return;
-		}
-	});
+	$scope.login = function() {
+        AccountService.login($scope.user).then((response) => {
+            if (response.data == true) {
+                $scope.successText = "Successfully logged in!";
+                $rootScope.user = angular.copy($scope.user);
+                $window.location.href = ROOT_HREF + "list"
+                return;
+            } else {
+                $scope.successText = "Wrong username/password!";
+                // Clear user data
+                $scope.user.username = "";
+                $scope.user.password = "";
+                return;
+            }
+        });
+    }
 };
 
-var NewTweetController = function ($scope, TweetService) {
+let NewTweetController = function (AuthService, $scope, TweetService) {
+
+	if (!AuthService.isAuthorized()) {
+		AuthService.redirectToLogin();
+	}
+
 	$scope.tweet = {
 		username: '',
 		messageBody: ''
@@ -74,7 +108,12 @@ var NewTweetController = function ($scope, TweetService) {
 
 };
 
-var PageController = function ($scope, TweetService) {
+let PageController = function (AuthService, $scope, TweetService) {
+
+	if (!AuthService.isAuthorized()) {
+		AuthService.redirectToLogin();
+	}
+
 	$scope.tweets = [];
 	$scope.page_number = 0;
 	$scope.searchField = "";
@@ -98,7 +137,7 @@ var PageController = function ($scope, TweetService) {
     $scope.getNextPage();
 };
 
-var AccountService = function($http) {
+let AccountService = function($http) {
 	service = {
 		register: function (user) {
 			return $http.post(register_url, user);
@@ -110,7 +149,7 @@ var AccountService = function($http) {
 	return service;
 }
 
-var TweetService = function($http) {
+let TweetService = function($http) {
 	service = {
 		getTweets: function() {
 			return $http.get(get_tweets_url);
@@ -132,25 +171,59 @@ var TweetService = function($http) {
 	return service;
 };
 
-var routes = function($routeProvider) {
+let AuthService = function ($rootScope, $window) {
+	service = {
+		isAuthorized: function() {
+			if ($rootScope.user == null ||
+				$rootScope.user.username == '') {
+				return false;
+			} else {
+				return true;
+			}
+        },
+
+		getUsername: function () {
+			return $rootScope.user.username;
+        },
+
+		redirectToLogin: function() {
+			$window.location.href = ROOT_HREF + 'login';
+		}
+	};
+	return service;
+};
+
+let routes = function($routeProvider) {
     $routeProvider.when('/', {
-        templateUrl: 'partials/main.html'
+        templateUrl: 'partials/main.html',
+		controller: 'MainController'
     }).when('/list', {
-        templateUrl: 'partials/list_all.html'
+        templateUrl: 'partials/list_all.html',
+		controller: 'ListController'
     }).when('/login', {
-        templateUrl: 'partials/login.html'
+        templateUrl: 'partials/login.html',
+		controller: 'LoginController'
     }).when('/add', {
-    	templateUrl: 'partials/new_tweet.html'
+    	templateUrl: 'partials/new_tweet.html',
+		controller: 'NewTweetController'
 	}).when('/pages', {
-		templateUrl: 'partials/pages.html'
+		templateUrl: 'partials/pages.html',
+		controller: 'PageController'
+	}).when('/register', {
+		templateUrl: 'partials/register.html',
+		controller: 'RegisterController'
 	}).otherwise({
-        templateUrl: 'partials/main.html'
+        templateUrl: 'partials/main.html',
+		controller: 'MainController'
     });
 };
 
 app.factory('AccountService', AccountService);
 app.factory('TweetService', TweetService);
+app.factory('AuthService', AuthService);
+app.controller('MainController', MainController);
 app.controller('ListController', ListController);
+app.controller('LoginController', LoginController);
 app.controller('RegisterController', RegisterController);
 app.controller('NewTweetController', NewTweetController);
 app.controller('PageController', PageController);
