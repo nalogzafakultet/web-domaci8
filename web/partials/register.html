@@ -1,0 +1,14 @@
+<div class="container">
+<div ng-controller="RegisterController">
+  <form class="form-signin" novalidate>
+    <h2 class="form-signin-heading">Sign up</h2>
+    <label for="inputEmail" class="sr-only">Username</label>
+    <input type="text" id="inputUsername" class="form-control" placeholder="Username" required autofocus ng-model="data.username">
+    <label for="inputPassword" class="sr-only">Password</label>
+    <input type="password" id="inputPassword" class="form-control" placeholder="Password" required ng-model="data.password">
+    <hr>
+    <p ng-model="successText"></p>
+    <a class="btn btn-lg btn-success" ng-click="register()" role="button">Register</a>
+  </form>
+</div>
+</div>
