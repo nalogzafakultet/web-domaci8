@@ -136,8 +136,7 @@ var routes = function($routeProvider) {
     $routeProvider.when('/', {
         templateUrl: 'partials/main.html'
     }).when('/list', {
-        templateUrl: 'partials/list_all.html',
-        controller: 'ListController'
+        templateUrl: 'partials/list_all.html'
     }).when('/login', {
         templateUrl: 'partials/login.html'
     }).when('/add', {
