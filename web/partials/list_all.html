@@ -1,13 +1,25 @@
-<div class="list-group" ng-controller="ListController">
-  <div ng-repeat="tweet in tweets">
-  <a href="#/" class="list-group-item list-group-item-action flex-column align-items-start">
-    <div class="d-flex w-100 justify-content-between">
-      <h5 class="mb-1">{{tweet.username}}</h5>
+<div class="container" ng-controller="ListController">
+    <div class="input-group">
+        <label class="sr-only" for="inlineFormInputGroup">Username</label>
+        <div class="input-group mb-2">
+            <div class="input-group-prepend">
+                <div class="input-group-text">@</div>
+            </div>
+            <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="Username" ng-model="searchField">
+        </div>
     </div>
-    <p class="mb-1">
-      {{tweet.messageBody}}
-    </p>
-  </a>
+    <div class="list-group">
+      <div ng-repeat="tweet in tweets | filter: {username: searchField}">
+      <a href="#/" class="list-group-item list-group-item-action flex-column align-items-start">
+        <div class="d-flex w-100 justify-content-between">
+          <h5 class="mb-1">{{tweet.username}}</h5>
+        </div>
+        <p class="mb-1">
+          {{tweet.messageBody}}
+        </p>
+      </a>
 
-  </div>
+      </div>
+    </div>
+
 </div>

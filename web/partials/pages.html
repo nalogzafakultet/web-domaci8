@@ -1,0 +1,22 @@
+<div class="container" ng-controller="PageController">
+  <nav aria-label="Page navigation example">
+    <ul class="pagination">
+      <li class="page-item"><button class="page-link" ng-disabled="page_number == 1" ng-click="getPrevPage()">Previous</button></li>
+      <li class="page-item"><button class="page-link" disabled>Page number: {{page_number}}</button></li>
+      <li class="page-item"><button class="page-link" ng-click="getNextPage()">Next</button></li>
+    </ul>
+  </nav>
+
+  <div class="list-group" >
+    <div ng-repeat="tweet in tweets">
+    <a href="#/" class="list-group-item list-group-item-action flex-column align-items-start">
+      <div class="d-flex w-100 justify-content-between">
+        <h5 class="mb-1">{{tweet.username}}</h5>
+      </div>
+      <p class="mb-1">
+        {{tweet.messageBody}}
+      </p>
+    </a>
+    </div>
+  </div>
+</div>
